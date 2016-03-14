@@ -114,6 +114,7 @@ bool AppDelegate::applicationDidFinishLaunching()
         searchPaths.push_back("ccs-res/hd/cocosui/UIEditorTest/UIScrollView/Both");
         searchPaths.push_back("ccs-res/hd/cocosui/UIEditorTest/UIScrollView/Horizontal");
         searchPaths.push_back("ccs-res/hd/cocosui/UIEditorTest/UIScrollView/Vertical");
+        searchPaths.push_back("ccs-res/hd/cocosui/UIEditorTest/UIScrollView/ScrollViewAndButton");
         searchPaths.push_back("ccs-res/hd/cocosui/UIEditorTest/UISlider");
         searchPaths.push_back("ccs-res/hd/cocosui/UIEditorTest/UITextField");
         searchPaths.push_back("ccs-res/hd/cocosui/UIEditorTest/UIWidgetAddNode");
@@ -122,6 +123,8 @@ bool AppDelegate::applicationDidFinishLaunching()
         searchPaths.push_back("ccs-res/hd/cocosui/CustomTest/CustomWidgetCallbackBindTest");
         searchPaths.push_back("hd/ActionTimeline");
         searchPaths.push_back("ccs-res/hd/armature");
+
+        searchPaths.push_back("ccs-res/hd/scene3DTest");
     }
     else
     {
@@ -153,6 +156,7 @@ bool AppDelegate::applicationDidFinishLaunching()
         searchPaths.push_back("ccs-res/cocosui/UIEditorTest/UIScrollView/Both");
         searchPaths.push_back("ccs-res/cocosui/UIEditorTest/UIScrollView/Horizontal");
         searchPaths.push_back("ccs-res/cocosui/UIEditorTest/UIScrollView/Vertical");
+        searchPaths.push_back("ccs-res/cocosui/UIEditorTest/UIScrollView/ScrollViewAndButton");
         searchPaths.push_back("ccs-res/cocosui/UIEditorTest/UISlider");
         searchPaths.push_back("ccs-res/cocosui/UIEditorTest/UITextField");
         searchPaths.push_back("ccs-res/cocosui/UIEditorTest/UIWidgetAddNode");
@@ -161,6 +165,8 @@ bool AppDelegate::applicationDidFinishLaunching()
         searchPaths.push_back("ccs-res/cocosui/CustomTest/CustomWidgetCallbackBindTest");
         searchPaths.push_back("ActionTimeline");
         searchPaths.push_back("ccs-res/armature");
+
+        searchPaths.push_back("ccs-res/scene3DTest");
     }
     
     fileUtils->setSearchPaths(searchPaths);

@@ -25,39 +25,19 @@ THE SOFTWARE.
 #include "UIScrollViewBar.h"
 #include "CCImage.h"
 #include "2d/CCSprite.h"
-#include "base/base64.h"
+#include "base/ccUtils.h"
 
 NS_CC_BEGIN
 
 namespace ui {
     
-static const char* HALF_CIRCLE_IMAGE = "iVBORw0KGgoAAAANSUhEUgAAAAwAAAAGCAMAAADAMI+zAAAAIVBMVEX///////////////////////////////////////////9/gMdvAAAAC3RSTlMAAgMLLFBTYWNkZuZhN4QAAAAvSURBVAjXRchBDgAgCAPBIi0q/3+wxBiZU7cAjJpTNBSPvMLrf7tqgPkR6hB2xzpFkgIfM9q/8QAAAABJRU5ErkJggg==";
-static const char* BODY_IMAGE_1_PIXEL_HEIGHT = "iVBORw0KGgoAAAANSUhEUgAAAAwAAAABCAMAAADdNb8LAAAAA1BMVEX///+nxBvIAAAAAXRSTlNm5DccCwAAAApJREFUeAFjQAYAAA0AAWHNnKQAAAAASUVORK5CYII=";
+static const char* HALF_CIRCLE_IMAGE = "iVBORw0KGgoAAAANSUhEUgAAAAwAAAAGCAMAAADAMI+zAAAAJ1BMVEX///////////////////////////////////////////////////9Ruv0SAAAADHRSTlMABgcbbW7Hz9Dz+PmlcJP5AAAAMElEQVR4AUXHwQ2AQAhFwYcLH1H6r1djzDK3ASxUpTBeK/uTCyz7dx54b44m4p5cD1MwAooEJyk3AAAAAElFTkSuQmCC";
+static const char* BODY_IMAGE_1_PIXEL_HEIGHT = "iVBORw0KGgoAAAANSUhEUgAAAAwAAAABCAMAAADdNb8LAAAAA1BMVEX///+nxBvIAAAACklEQVR4AWNABgAADQABYc2cpAAAAABJRU5ErkJggg==";
 
 static const Color3B DEFAULT_COLOR(52, 65, 87);
 static const float DEFAULT_MARGIN = 20;
 static const float DEFAULT_AUTO_HIDE_TIME = 0.2f;
-
-static Sprite* createSpriteFromBase64(const char* base64String)
-{
-    unsigned char* decoded;
-    int length = base64Decode((const unsigned char*) base64String, (unsigned int) strlen(base64String), &decoded);
-    
-    Image *image = new Image();
-    bool imageResult = image->initWithImageData(decoded, length);
-    CCASSERT(imageResult, "Failed to create image from base64!");
-    free(decoded);
-    
-    Texture2D *texture = new Texture2D();
-    texture->initWithImage(image);
-    texture->setAliasTexParameters();
-    image->release();
-    
-    Sprite* sprite = Sprite::createWithTexture(texture);
-    texture->release();
-    
-    return sprite;
-}
+static const float DEFAULT_SCROLLBAR_OPACITY = 0.4f;
 
 ScrollViewBar::ScrollViewBar(ScrollView* parent, ScrollView::Direction direction):
 _parent(parent),
@@ -65,6 +45,7 @@ _direction(direction),
 _upperHalfCircle(nullptr),
 _lowerHalfCircle(nullptr),
 _body(nullptr),
+_opacity(255 * DEFAULT_SCROLLBAR_OPACITY),
 _marginFromBoundary(DEFAULT_MARGIN),
 _marginForLength(DEFAULT_MARGIN),
 _touching(false),
@@ -101,29 +82,27 @@ bool ScrollViewBar::init()
         return false;
     }
     
-    _upperHalfCircle = createSpriteFromBase64(HALF_CIRCLE_IMAGE);
+    _upperHalfCircle = utils::createSpriteFromBase64(HALF_CIRCLE_IMAGE);
     _upperHalfCircle->setAnchorPoint(Vec2::ANCHOR_MIDDLE_BOTTOM);
-    addChild(_upperHalfCircle);
+    addProtectedChild(_upperHalfCircle);
     
     _lowerHalfCircle = Sprite::createWithTexture(_upperHalfCircle->getTexture(), _upperHalfCircle->getTextureRect(), _upperHalfCircle->isTextureRectRotated());
     _lowerHalfCircle->setScaleY(-1);
     _lowerHalfCircle->setAnchorPoint(Vec2::ANCHOR_MIDDLE_BOTTOM);
-    addChild(_lowerHalfCircle);
+    addProtectedChild(_lowerHalfCircle);
     
-    _body = createSpriteFromBase64(BODY_IMAGE_1_PIXEL_HEIGHT);
+    _body = utils::createSpriteFromBase64(BODY_IMAGE_1_PIXEL_HEIGHT);
     _body->setAnchorPoint(Vec2::ANCHOR_MIDDLE_BOTTOM);
-    addChild(_body);
+    addProtectedChild(_body);
     
     setColor(DEFAULT_COLOR);
-    
+    onScrolled(Vec2::ZERO);
+    ProtectedNode::setOpacity(0);
+    _autoHideRemainingTime = 0.0f;
+
     if(_direction == ScrollView::Direction::HORIZONTAL)
     {
         setRotation(90);
-    }
-    
-    if(_autoHideEnabled)
-    {
-        setOpacity(0);
     }
     return true;
 }
@@ -165,7 +144,12 @@ void ScrollViewBar::setWidth(float width)
 void ScrollViewBar::setAutoHideEnabled(bool autoHideEnabled)
 {
     _autoHideEnabled = autoHideEnabled;
-    setOpacity(255);
+    if (!_autoHideEnabled && !_touching && _autoHideRemainingTime <= 0)
+    {
+        ProtectedNode::setOpacity(_opacity);
+    }
+    else
+        ProtectedNode::setOpacity(0);
 }
 
 float ScrollViewBar::getWidth() const
@@ -182,13 +166,26 @@ void ScrollViewBar::updateLength(float length)
 
 void ScrollViewBar::onEnter()
 {
+#if CC_ENABLE_SCRIPT_BINDING
+    if (_scriptType == kScriptTypeJavascript)
+    {
+        if (ScriptEngineManager::sendNodeEventToJSExtended(this, kNodeOnEnter))
+            return;
+    }
+#endif
+    
     ProtectedNode::onEnter();
     scheduleUpdate();
 }
 
 void ScrollViewBar::update(float deltaTime)
 {
-    if(!_autoHideEnabled || _autoHideRemainingTime <= 0)
+    processAutoHide(deltaTime);
+}
+    
+void ScrollViewBar::processAutoHide(float deltaTime)
+{
+   if(!_autoHideEnabled || _autoHideRemainingTime <= 0)
     {
         return;
     }
@@ -202,7 +199,7 @@ void ScrollViewBar::update(float deltaTime)
     if(_autoHideRemainingTime <= _autoHideTime)
     {
         _autoHideRemainingTime = MAX(0, _autoHideRemainingTime);
-        this->setOpacity(255 * (_autoHideRemainingTime / _autoHideTime));
+        ProtectedNode::setOpacity(_opacity * (_autoHideRemainingTime / _autoHideTime));
     }
 }
 
@@ -236,7 +233,7 @@ void ScrollViewBar::onScrolled(const Vec2& outOfBoundary)
     if(_autoHideEnabled)
     {
         _autoHideRemainingTime = _autoHideTime;
-        setOpacity(255);
+        ProtectedNode::setOpacity(_opacity);
     }
     
     Layout* innerContainer = _parent->getInnerContainer();

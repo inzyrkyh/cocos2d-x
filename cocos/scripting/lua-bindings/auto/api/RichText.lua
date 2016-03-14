@@ -23,6 +23,13 @@
 -- @return RichText#RichText self (return value: ccui.RichText)
         
 --------------------------------
+--  @brief sets the wrapping mode: WRAP_PER_CHAR or WRAP_PER_WORD
+-- @function [parent=#RichText] setWrapMode 
+-- @param self
+-- @param #int wrapMode
+-- @return RichText#RichText self (return value: ccui.RichText)
+        
+--------------------------------
 -- brief Set vertical space between each RichElement.<br>
 -- param space Point in float.
 -- @function [parent=#RichText] setVerticalSpace 
@@ -31,11 +38,24 @@
 -- @return RichText#RichText self (return value: ccui.RichText)
         
 --------------------------------
+--  @brief returns the current wrapping mode 
+-- @function [parent=#RichText] getWrapMode 
+-- @param self
+-- @return int#int ret (return value: int)
+        
+--------------------------------
 -- brief Rearrange all RichElement in the RichText.<br>
 -- It's usually called internally.
 -- @function [parent=#RichText] formatText 
 -- @param self
 -- @return RichText#RichText self (return value: ccui.RichText)
+        
+--------------------------------
+-- 
+-- @function [parent=#RichText] initWithXML 
+-- @param self
+-- @param #string xml
+-- @return bool#bool ret (return value: bool)
         
 --------------------------------
 -- @overload self, ccui.RichElement         
@@ -53,11 +73,12 @@
 -- @return RichText#RichText ret (return value: ccui.RichText)
         
 --------------------------------
--- 
--- @function [parent=#RichText] setAnchorPoint 
+-- brief Create a RichText from an XML<br>
+-- return RichText instance.
+-- @function [parent=#RichText] createWithXML 
 -- @param self
--- @param #vec2_table pt
--- @return RichText#RichText self (return value: ccui.RichText)
+-- @param #string xml
+-- @return RichText#RichText ret (return value: ccui.RichText)
         
 --------------------------------
 -- 
@@ -70,12 +91,6 @@
 -- @function [parent=#RichText] getDescription 
 -- @param self
 -- @return string#string ret (return value: string)
-        
---------------------------------
--- 
--- @function [parent=#RichText] getVirtualRendererSize 
--- @param self
--- @return size_table#size_table ret (return value: size_table)
         
 --------------------------------
 -- 

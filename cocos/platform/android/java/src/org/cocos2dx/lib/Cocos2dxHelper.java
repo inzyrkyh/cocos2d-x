@@ -24,34 +24,30 @@ THE SOFTWARE.
  ****************************************************************************/
 package org.cocos2dx.lib;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Locale;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.lang.Runnable;
-
-import com.chukong.cocosplay.client.CocosPlayClient;
-
 import android.app.Activity;
-import android.content.ComponentName;  //Enhance API modification
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.IBinder;  //Enhance API modification
+import android.os.IBinder;
 import android.os.Vibrator;
 import android.preference.PreferenceManager.OnActivityResultListener;
 import android.util.DisplayMetrics;
-import android.util.Log;  //Enhance API modification
 import android.view.Display;
 import android.view.WindowManager;
-import android.content.ServiceConnection;  //Enhance API modification	
 
-import com.enhance.gameservice.IGameTuningService;  //Enhance API modification
+import com.enhance.gameservice.IGameTuningService;
+
+import java.io.UnsupportedEncodingException;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 public class Cocos2dxHelper {
     // ===========================================================
@@ -91,18 +87,13 @@ public class Cocos2dxHelper {
 
     private static boolean sInited = false;
     public static void init(final Activity activity) {
+        sActivity = activity;
+        Cocos2dxHelper.sCocos2dxHelperListener = (Cocos2dxHelperListener)activity;
         if (!sInited) {
             final ApplicationInfo applicationInfo = activity.getApplicationInfo();
-            
-            Cocos2dxHelper.sCocos2dxHelperListener = (Cocos2dxHelperListener)activity;
                     
             Cocos2dxHelper.sPackageName = applicationInfo.packageName;
-            if (CocosPlayClient.isEnabled() && !CocosPlayClient.isDemo()) {
-                Cocos2dxHelper.sFileDirectory = CocosPlayClient.getGameRoot();
-            }
-            else {
-                Cocos2dxHelper.sFileDirectory = activity.getFilesDir().getAbsolutePath();
-            }
+            Cocos2dxHelper.sFileDirectory = activity.getFilesDir().getAbsolutePath();
             
             Cocos2dxHelper.nativeSetApkPath(applicationInfo.sourceDir);
     
@@ -113,7 +104,6 @@ public class Cocos2dxHelper {
             Cocos2dxHelper.nativeSetContext((Context)activity, Cocos2dxHelper.sAssetManager);
     
             Cocos2dxBitmap.setContext(activity);
-            sActivity = activity;
 
             Cocos2dxHelper.sVibrateService = (Vibrator)activity.getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -177,7 +167,6 @@ public class Cocos2dxHelper {
     public static String getCocos2dxPackageName() {
         return Cocos2dxHelper.sPackageName;
     }
-
     public static String getCocos2dxWritablePath() {
         return Cocos2dxHelper.sFileDirectory;
     }
@@ -216,6 +205,15 @@ public class Cocos2dxHelper {
     public static void vibrate(float duration) {
         sVibrateService.vibrate((long)(duration * 1000));
     }
+
+ 	public static String getVersion() {
+ 		try {
+ 			String version = Cocos2dxActivity.getContext().getPackageManager().getPackageInfo(Cocos2dxActivity.getContext().getPackageName(), 0).versionName;
+ 			return version;
+ 		} catch(Exception e) {
+ 			return "";
+ 		}
+ 	}
 
     public static boolean openURL(String url) { 
         boolean ret = false;
@@ -346,9 +344,6 @@ public class Cocos2dxHelper {
         Cocos2dxHelper.sCocos2dxHelperListener.showDialog(pTitle, pMessage);
     }
 
-    private static void showEditTextDialog(final String pTitle, final String pMessage, final int pInputMode, final int pInputFlag, final int pReturnType, final int pMaxLength) {
-        Cocos2dxHelper.sCocos2dxHelperListener.showEditTextDialog(pTitle, pMessage, pInputMode, pInputFlag, pReturnType, pMaxLength);
-    }
 
     public static void setEditTextDialogResult(final String pResult) {
         try {
@@ -532,6 +527,18 @@ public class Cocos2dxHelper {
         editor.remove(key);
         editor.commit();
     }
+
+    public static byte[] conversionEncoding(byte[] text, String fromCharset,String newCharset)
+    {
+        try {
+            String str = new String(text,fromCharset);
+            return str.getBytes(newCharset);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
     
     // ===========================================================
     // Inner and Anonymous Classes
@@ -539,7 +546,6 @@ public class Cocos2dxHelper {
 
     public static interface Cocos2dxHelperListener {
         public void showDialog(final String pTitle, final String pMessage);
-        public void showEditTextDialog(final String pTitle, final String pMessage, final int pInputMode, final int pInputFlag, final int pReturnType, final int pMaxLength);
 
         public void runOnGLThread(final Runnable pRunnable);
     }

@@ -29,12 +29,14 @@ if(WIN32) # Win32
   set(PLATFORM_FOLDER win32)
 elseif(APPLE)# osx or ios
   set(PLATFORM_FOLDER mac)
+  set(PLATFORM_SRC manual/platform/ios/JavaScriptObjCBridge.mm)
 else() # Assume Linux
   set(PLATFORM_FOLDER linux)
 endif()
 
 set(JSBINDING_SRC
   auto/jsb_cocos2dx_auto.cpp
+  auto/jsb_cocos2dx_audioengine_auto.cpp
   auto/jsb_cocos2dx_builder_auto.cpp
   auto/jsb_cocos2dx_extension_auto.cpp
   auto/jsb_cocos2dx_spine_auto.cpp
@@ -44,6 +46,8 @@ set(JSBINDING_SRC
   auto/jsb_cocos2dx_3d_extension_auto.cpp
   auto/jsb_cocos2dx_physics3d_auto.cpp
   auto/jsb_cocos2dx_navmesh_auto.cpp
+  auto/js_bindings_chipmunk_functions.cpp
+  auto/js_bindings_chipmunk_auto_classes.cpp
   manual/ScriptingCore.cpp
   manual/cocos2d_specifics.cpp
   manual/js_manual_conversions.cpp
@@ -53,9 +57,8 @@ set(JSBINDING_SRC
   manual/jsb_opengl_manual.cpp
   manual/jsb_opengl_registration.cpp
   manual/jsb_event_dispatcher_manual.cpp
+  manual/component/CCComponentJS.cpp
   manual/chipmunk/js_bindings_chipmunk_manual.cpp
-  manual/chipmunk/js_bindings_chipmunk_functions.cpp
-  manual/chipmunk/js_bindings_chipmunk_auto_classes.cpp
   manual/chipmunk/js_bindings_chipmunk_registration.cpp
   manual/cocosbuilder/js_bindings_ccbreader.cpp
   manual/cocostudio/jsb_cocos2dx_studio_manual.cpp
@@ -73,6 +76,7 @@ set(JSBINDING_SRC
   manual/navmesh/jsb_cocos2dx_navmesh_conversions.cpp
   manual/navmesh/jsb_cocos2dx_navmesh_manual.cpp
   ${cocos_root}/cocos/storage/local-storage/LocalStorage.cpp
+  ${PLATFORM_SRC}
 )
 
 include_directories(
@@ -99,7 +103,7 @@ include_directories(
   ${cocos_root}/cocos/editor-support/spine
   ${cocos_root}/cocos/editor-support/cocosbuilder
   ${cocos_root}/cocos/editor-support/cocostudio
-  ${cocos_root}/external/chipmunk/include/chipmunk
+  ${CHIPMUNK_INCLUDE_DIRS}
 )
 
 add_library(jscocos2d STATIC

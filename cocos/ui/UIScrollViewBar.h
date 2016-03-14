@@ -59,8 +59,8 @@ public:
     virtual ~ScrollViewBar();
     
     /**
-     * Create a ScrollView with its parent ScrollView and direction.
-     * @return A ScrollViewBar instance.
+     * Create a scroll bar with its parent scroll view and direction.
+     * @return A scroll bar instance.
      */
     static ScrollViewBar* create(ScrollView* parent, ScrollView::Direction direction);
     
@@ -130,6 +130,8 @@ public:
     /**
      * @lua NA
      */
+    virtual void setOpacity(GLubyte opacity) override { _opacity = opacity; }
+    virtual GLubyte getOpacity() const override { return _opacity; }
     virtual void onEnter() override;
     virtual void update(float deltaTime) override;
     
@@ -151,14 +153,17 @@ private:
     Vec2 calculatePosition(float innerContainerMeasure, float scrollViewMeasure, float innerContainerPosition, float outOfBoundaryValue, float actualLength);
     
     void updateLength(float length);
+    void processAutoHide(float deltaTime);
     
     ScrollView* _parent;
     ScrollView::Direction _direction;
-	
+    
     Sprite* _upperHalfCircle;
     Sprite* _lowerHalfCircle;
     Sprite* _body;
-	
+    
+    GLubyte _opacity;
+    
     float _marginFromBoundary;
     float _marginForLength;
 

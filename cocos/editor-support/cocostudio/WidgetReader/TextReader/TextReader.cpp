@@ -5,6 +5,7 @@
 #include "ui/UIText.h"
 #include "cocostudio/CocoLoader.h"
 #include "cocostudio/CSParseBinary_generated.h"
+#include "cocostudio/LocalizationManager.h"
 
 #include "tinyxml2.h"
 #include "flatbuffers/flatbuffers.h"
@@ -160,6 +161,7 @@ namespace cocostudio
         std::string fontName = "";
         int fontSize = 20;
         std::string text = "Text Label";
+        bool isLocalized = false;
         int areaWidth = 0;
         int areaHeight = 0;
         int h_alignment = 0;
@@ -190,6 +192,10 @@ namespace cocostudio
             else if (name == "LabelText")
             {
                 text = value;
+            }
+            else if (name == "IsLocalized")
+            {
+                isLocalized = (value == "True") ? true : false;
             }
             else if (name == "FontSize")
             {
@@ -374,6 +380,7 @@ namespace cocostudio
                                          builder->CreateString(fontName),
                                          fontSize,
                                          builder->CreateString(text),
+                                         isLocalized,
                                          areaWidth,
                                          areaHeight,
                                          h_alignment,
@@ -400,55 +407,34 @@ namespace cocostudio
         bool touchScaleEnabled = options->touchScaleEnable() != 0;
         label->setTouchScaleChangeEnabled(touchScaleEnabled);
         
-        std::string text = options->text()->c_str();
-        label->setString(text);
-        
         int fontSize = options->fontSize();
         label->setFontSize(fontSize);
-        
-        std::string fontName = options->fontName()->c_str();
-        label->setFontName(fontName);
-        
+
         Size areaSize = Size(options->areaWidth(), options->areaHeight());
         if (!areaSize.equals(Size::ZERO))
         {
             label->setTextAreaSize(areaSize);
         }
+
+        auto resourceData = options->fontResource();
+        std::string path = resourceData->path()->c_str();
+        if (!path.empty() && FileUtils::getInstance()->isFileExist(path))
+        {
+            label->setFontName(path);
+        }
+        else
+        {
+            std::string fontName = options->fontName()->c_str();
+            label->setFontName(fontName);
+        }
         
         TextHAlignment h_alignment = (TextHAlignment)options->hAlignment();
         label->setTextHorizontalAlignment(h_alignment);
-        
+
         TextVAlignment v_alignment = (TextVAlignment)options->vAlignment();
         label->setTextVerticalAlignment((TextVAlignment)v_alignment);
-        
-        bool fileExist = false;
-        std::string errorFilePath = "";
-        auto resourceData = options->fontResource();
-        std::string path = resourceData->path()->c_str();
-        if (path != "")
-        {
-            if (FileUtils::getInstance()->isFileExist(path))
-            {
-                fileExist = true;
-            }
-            else
-            {
-                errorFilePath = path;
-                fileExist = false;
-            }
-            if (fileExist)
-            {
-                label->setFontName(path);
-            }
-            //else
-            //{
-            //    auto alert = Label::create();
-            //    alert->setString(__String::createWithFormat("%s missed", errorFilePath.c_str())->getCString());
-            //    label->addChild(alert);
-            //}
-        }
-        
-        bool outlineEnabled = options->outlineEnabled();
+
+        bool outlineEnabled = options->outlineEnabled() != 0;
         if (outlineEnabled)
         {
             auto f_outlineColor = options->outlineColor();
@@ -459,7 +445,7 @@ namespace cocostudio
             }
         }
         
-        bool shadowEnabled = options->shadowEnabled();
+        bool shadowEnabled = options->shadowEnabled() != 0;
         if (shadowEnabled)
         {
             auto f_shadowColor = options->shadowColor();
@@ -468,6 +454,18 @@ namespace cocostudio
                 Color4B shadowColor(f_shadowColor->r(), f_shadowColor->g(), f_shadowColor->b(), f_shadowColor->a());
                 label->enableShadow(shadowColor, Size(options->shadowOffsetX(), options->shadowOffsetY()), options->shadowBlurRadius());
             }
+        }
+
+        std::string text = options->text()->c_str();
+        bool isLocalized = options->isLocalized() != 0;
+        if (isLocalized)
+        {
+            ILocalizationManager* lm = LocalizationHelper::getCurrentManager();
+            label->setString(lm->getLocalizationString(text));
+        }
+        else
+        {
+            label->setString(text);
         }
 
         // Save node color before set widget properties
@@ -494,7 +492,6 @@ namespace cocostudio
             Size contentSize(widgetOptions->size()->width(), widgetOptions->size()->height());
             label->setContentSize(contentSize);
         }
-        
     }
     
     Node* TextReader::createNodeWithFlatBuffers(const flatbuffers::Table *textOptions)

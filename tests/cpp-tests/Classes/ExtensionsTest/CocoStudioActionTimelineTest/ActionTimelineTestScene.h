@@ -15,7 +15,7 @@ public:
 class ActionTimelineBaseTest : public TestCase
 {
 public:
-    virtual std::string title() const;
+    virtual std::string title() const override;
 
     virtual bool init() override;
 
@@ -115,6 +115,63 @@ public:
     
     virtual void onEnter() override;
     virtual std::string title() const override;
+};
+
+class TestActionTimelineSkeleton : public ActionTimelineBaseTest
+{
+public:
+    CREATE_FUNC(TestActionTimelineSkeleton);
+
+    virtual void onEnter() override;
+    
+    virtual std::string title() const override;
+
+private:
+    bool _changedDisplay;
+    bool _changedDisplays;
+};
+
+class TestTimelineExtensionData : public ActionTimelineBaseTest
+{
+public:
+    CREATE_FUNC(TestTimelineExtensionData);
+    virtual void onEnter() override;
+    virtual std::string title() const override;
+};
+
+class TestActionTimelineBlendFuncFrame : public ActionTimelineBaseTest
+{
+public:
+    CREATE_FUNC(TestActionTimelineBlendFuncFrame);
+    virtual void onEnter() override;
+    virtual std::string title() const override;
+};
+
+class TestAnimationClipEndCallBack : public ActionTimelineBaseTest
+{
+public:
+    CREATE_FUNC(TestAnimationClipEndCallBack);
+
+    virtual void onEnter() override;
+    virtual std::string title() const override;
+};
+
+class TestActionTimelinePlayableFrame : public ActionTimelineBaseTest
+{
+public:
+    CREATE_FUNC(TestActionTimelinePlayableFrame);
+
+    virtual void onEnter() override;
+    virtual std::string  title() const override;
+};
+
+class TestActionTimelineIssueWith2SameActionInOneNode : public ActionTimelineBaseTest
+{
+public:
+    CREATE_FUNC(TestActionTimelineIssueWith2SameActionInOneNode);
+
+    virtual void onEnter() override;
+    virtual std::string  title() const override;
 };
 
 #endif  // __ANIMATION_SCENE_H__

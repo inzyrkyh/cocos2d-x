@@ -30,6 +30,10 @@
 #include <vector>
 #include <string>
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID) 
+#include "platform/android/jni/JniHelper.h"
+#endif
+
 NS_CC_BEGIN
 
 namespace StringUtils {
@@ -67,6 +71,30 @@ CC_DLL bool UTF8ToUTF16(const std::string& utf8, std::u16string& outUtf16);
  *  @endcode
  */
 CC_DLL bool UTF16ToUTF8(const std::u16string& utf16, std::string& outUtf8);
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+
+
+/**
+*  @brief convert jstring to utf8 std::string,  same function with env->getStringUTFChars. 
+*         because getStringUTFChars can not pass special emoticon
+*  @param env   The JNI Env
+*  @param srcjStr The jstring which want to convert
+*  @param ret   True if the conversion succeeds and the ret pointer isn't null
+*  @returns the result of utf8 string
+*/
+CC_DLL std::string getStringUTFCharsJNI(JNIEnv* env, jstring srcjStr, bool* ret = nullptr);
+
+/**
+*  @brief create a jstring with utf8 std::string, same function with env->newStringUTF
+*         because newStringUTF can not convert special emoticon
+*  @param env   The JNI Env
+*  @param srcjStr The std::string which want to convert
+*  @param ret     True if the conversion succeeds and the ret pointer isn't null
+*  @returns the result of jstring,the jstring need to DeleteLocalRef(jstring);
+*/
+CC_DLL jstring newStringUTFJNI(JNIEnv* env, std::string utf8Str, bool* ret = nullptr);
+#endif
 
 /**
  *  @brief Trims the unicode spaces at the end of char16_t vector.
@@ -113,6 +141,42 @@ CC_DLL unsigned int getIndexOfLastNotChar16(const std::vector<char16_t>& str, ch
  *  @brief Gets char16_t vector from a given utf16 string.
  */
 CC_DLL std::vector<char16_t> getChar16VectorFromUTF16String(const std::u16string& utf16);
+
+
+
+/**
+* Utf8 sequence
+* Store all utf8 chars as std::string
+* Build from std::string
+*/
+class CC_DLL StringUTF8
+{
+public:
+    struct CharUTF8
+    {
+        std::string _char;
+        bool isAnsi() { return _char.size() == 1; }
+    };
+    typedef std::vector<CharUTF8> CharUTF8Store;
+
+    StringUTF8();
+    StringUTF8(const std::string& newStr);
+    ~StringUTF8();
+
+    std::size_t length() const;
+    void replace(const std::string& newStr);
+
+    std::string getAsCharSequence() const;
+
+    bool deleteChar(std::size_t pos);
+    bool insert(std::size_t pos, const std::string& insertStr);
+    bool insert(std::size_t pos, const StringUTF8& insertStr);
+
+    CharUTF8Store& getString() { return _str; }
+
+private:
+    CharUTF8Store _str;
+};
 
 } // namespace StringUtils {
 

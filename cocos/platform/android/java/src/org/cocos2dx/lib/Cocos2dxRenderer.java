@@ -23,12 +23,10 @@ THE SOFTWARE.
  ****************************************************************************/
 package org.cocos2dx.lib;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 import android.opengl.GLSurfaceView;
 
-import org.cocos2dx.lib.Cocos2dxHelper;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 public class Cocos2dxRenderer implements GLSurfaceView.Renderer {
     // ===========================================================
     // Constants
@@ -147,12 +145,12 @@ public class Cocos2dxRenderer implements GLSurfaceView.Renderer {
     }
 
     public void handleOnPause() {
-    	/**
-    	 * onPause may be invoked before onSurfaceCreated, 
-    	 * and engine will be initialized correctly after
-    	 * onSurfaceCreated is invoked. Can not invoke any
-    	 * native method before onSurfaceCreated is invoked
-    	 */
+        /**
+         * onPause may be invoked before onSurfaceCreated, 
+         * and engine will be initialized correctly after
+         * onSurfaceCreated is invoked. Can not invoke any
+         * native method before onSurfaceCreated is invoked
+         */
         if (! mNativeInitCompleted)
             return;
 
